@@ -24,6 +24,7 @@ vendor/
 /dist/
 /build/
 agent-worktree
+doctree
 
 # Environment files
 .env

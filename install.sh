@@ -69,6 +69,10 @@ main() {
   mkdir -p "$INSTALL_DIR"
   install -m 0755 "$tmp/$BIN" "$INSTALL_DIR/$BIN"
 
+  runtime_dir="$HOME/.doctree"
+  mkdir -p "$runtime_dir"
+  printf '%s\n' "$tag" > "$runtime_dir/VERSION"
+
   info "installed $INSTALL_DIR/$BIN ($tag)"
 
   case ":$PATH:" in

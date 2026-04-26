@@ -1,4 +1,4 @@
-// Package worktree owns doctree's per-branch worktree layout convention:
+// Package worktree owns gitt's per-branch worktree layout convention:
 // <repo-parent>/.worktrees/<repo-name>/<safe-branch>.
 package worktree
 
@@ -14,7 +14,7 @@ func SafeBranch(branch string) string {
 }
 
 // Path returns the directory where the worktree for branch should live,
-// following doctree's layout: <repo-parent>/.worktrees/<repo-name>/<safe-branch>.
+// following gitt's layout: <repo-parent>/.worktrees/<repo-name>/<safe-branch>.
 func Path(repoRoot, branch string) string {
 	return filepath.Join(
 		filepath.Dir(repoRoot),

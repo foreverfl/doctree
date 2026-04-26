@@ -4,17 +4,17 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/foreverfl/doctree/internal/banner"
-	"github.com/foreverfl/doctree/internal/daemon"
-	"github.com/foreverfl/doctree/internal/paths"
-	"github.com/foreverfl/doctree/internal/process"
-	"github.com/foreverfl/doctree/internal/version"
+	"github.com/foreverfl/gitt/internal/banner"
+	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/paths"
+	"github.com/foreverfl/gitt/internal/process"
+	"github.com/foreverfl/gitt/internal/version"
 	"github.com/spf13/cobra"
 )
 
 var onCmd = &cobra.Command{
 	Use:   "on",
-	Short: "Start the doctree daemon",
+	Short: "Start the gitt daemon",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		sockpath, err := paths.SockPath()
 		if err != nil {
@@ -32,7 +32,7 @@ var onCmd = &cobra.Command{
 		// Already running? Skip.
 		if pid, ok := process.ReadPid(pidpath); ok && process.Alive(pid) {
 			if err := daemon.Ping(sockpath); err == nil {
-				fmt.Printf("doctree daemon already running (pid=%d)\n", pid)
+				fmt.Printf("gitt daemon already running (pid=%d)\n", pid)
 				return nil
 			}
 		}
@@ -51,7 +51,7 @@ var onCmd = &cobra.Command{
 			return err
 		}
 		banner.Print(os.Stdout, version.Installed())
-		fmt.Printf("doctree daemon started (pid=%d)\n", pid)
+		fmt.Printf("gitt daemon started (pid=%d)\n", pid)
 		return nil
 	},
 }

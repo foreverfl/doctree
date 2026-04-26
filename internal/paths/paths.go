@@ -1,4 +1,4 @@
-// Package paths resolves doctree's runtime file locations under ~/.doctree.
+// Package paths resolves gitt's runtime file locations under ~/.gitt.
 package paths
 
 import (
@@ -6,13 +6,13 @@ import (
 	"path/filepath"
 )
 
-// RuntimeDir returns ~/.doctree, creating it on demand.
+// RuntimeDir returns ~/.gitt, creating it on demand.
 func RuntimeDir() (string, error) {
 	home, err := os.UserHomeDir()
 	if err != nil {
 		return "", err
 	}
-	dir := filepath.Join(home, ".doctree")
+	dir := filepath.Join(home, ".gitt")
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		return "", err
 	}
@@ -24,7 +24,7 @@ func SockPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "doctree.sock"), nil
+	return filepath.Join(dir, "gitt.sock"), nil
 }
 
 func PidPath() (string, error) {
@@ -32,7 +32,7 @@ func PidPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "doctree.pid"), nil
+	return filepath.Join(dir, "gitt.pid"), nil
 }
 
 func LogPath() (string, error) {
@@ -40,7 +40,7 @@ func LogPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "doctree.log"), nil
+	return filepath.Join(dir, "gitt.log"), nil
 }
 
 func DBPath() (string, error) {
@@ -48,7 +48,7 @@ func DBPath() (string, error) {
 	if err != nil {
 		return "", err
 	}
-	return filepath.Join(dir, "doctree.db"), nil
+	return filepath.Join(dir, "gitt.db"), nil
 }
 
 func VersionPath() (string, error) {

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/foreverfl/doctree/cmd"
+	"github.com/foreverfl/gitt/cmd"
 )
 
 func main() {

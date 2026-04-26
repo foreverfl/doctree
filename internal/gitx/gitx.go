@@ -1,4 +1,4 @@
-// Package gitx wraps the git CLI calls doctree needs. It shells out rather
+// Package gitx wraps the git CLI calls gitt needs. It shells out rather
 // than linking a git library to keep the binary small and stay close to
 // observable git behavior.
 package gitx

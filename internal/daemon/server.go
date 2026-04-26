@@ -10,7 +10,7 @@ import (
 	"sync"
 	"syscall"
 
-	"github.com/foreverfl/doctree/internal/store"
+	"github.com/foreverfl/gitt/internal/store"
 )
 
 type handler func(req Request) Response
@@ -89,7 +89,7 @@ func (server *server) acceptLoop() {
 			if errors.Is(err, net.ErrClosed) {
 				return
 			}
-			fmt.Fprintln(os.Stderr, "doctree: accept:", err)
+			fmt.Fprintln(os.Stderr, "gitt: accept:", err)
 			continue
 		}
 		server.wg.Add(1)

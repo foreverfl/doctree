@@ -8,9 +8,9 @@ import (
 
 var helpCmd = &cobra.Command{
 	Use:   "help",
-	Short: "Show doctree help",
+	Short: "Show gitt help",
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("doctree help — placeholder")
+		fmt.Println("gitt help — placeholder")
 	},
 }
 

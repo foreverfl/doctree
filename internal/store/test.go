@@ -18,7 +18,7 @@ var testInsertSQL string
 var testSelectSQL string
 
 // Test creates a scratch table, inserts and reads back a row, then drops the
-// table. Returns a one-line summary on success. Used by `doctree sqlite` to
+// table. Returns a one-line summary on success. Used by `gitt sqlite` to
 // confirm the daemon's database is reachable and writable end-to-end.
 func (store *Store) Test() (string, error) {
 	if _, err := store.db.Exec(testDropSQL); err != nil {

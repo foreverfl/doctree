@@ -1,4 +1,4 @@
-module github.com/foreverfl/doctree
+module github.com/foreverfl/gitt
 
 go 1.25.0
 

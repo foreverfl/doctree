@@ -1,4 +1,4 @@
-// Package logo embeds the doctree character art used by the welcome banner.
+// Package logo embeds the gitt character art used by the welcome banner.
 package logo
 
 import _ "embed"

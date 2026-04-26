@@ -4,18 +4,18 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/foreverfl/doctree/internal/daemon"
-	"github.com/foreverfl/doctree/internal/paths"
+	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/spf13/cobra"
 )
 
 var sqliteCmd = &cobra.Command{
 	Use:   "sqlite",
 	Short: "Run a SQLite self-test against the daemon's database",
-	Long: "Asks the running doctree daemon to create a scratch table, insert a\n" +
+	Long: "Asks the running gitt daemon to create a scratch table, insert a\n" +
 		"row, read it back, and drop the table. Useful for confirming the\n" +
 		"daemon's database connection is healthy.\n\n" +
-		"Requires `doctree on` to be running.",
+		"Requires `gitt on` to be running.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		sockpath, err := paths.SockPath()
 		if err != nil {
@@ -24,7 +24,7 @@ var sqliteCmd = &cobra.Command{
 		response, err := daemon.Call(sockpath, daemon.Request{Op: daemon.OpSqliteTest})
 		if err != nil {
 			if errors.Is(err, daemon.ErrNotRunning) {
-				return fmt.Errorf("doctree daemon not running. start it with `doctree on`")
+				return fmt.Errorf("gitt daemon not running. start it with `gitt on`")
 			}
 			return err
 		}

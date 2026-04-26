@@ -42,12 +42,12 @@ jobs:
           CGO_ENABLED: 0
         run: |
           mkdir -p dist
-          go build -trimpath -ldflags "-s -w" -o dist/doctree .
-          tar -C dist -czf dist/doctree_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz doctree
-          rm dist/doctree
+          go build -trimpath -ldflags "-s -w" -o dist/gitt .
+          tar -C dist -czf dist/gitt_${{ matrix.goos }}_${{ matrix.goarch }}.tar.gz gitt
+          rm dist/gitt
       - uses: actions/upload-artifact@v4
         with:
-          name: doctree-${{ matrix.goos }}-${{ matrix.goarch }}
+          name: gitt-${{ matrix.goos }}-${{ matrix.goarch }}
           path: dist/*.tar.gz
           retention-days: 1
 

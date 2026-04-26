@@ -4,14 +4,14 @@ import (
 	"errors"
 	"fmt"
 
-	"github.com/foreverfl/doctree/internal/daemon"
-	"github.com/foreverfl/doctree/internal/paths"
+	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/spf13/cobra"
 )
 
 var rootCmd = &cobra.Command{
-	Use:          "doctree",
-	Short:        "doctree — git worktree + docker compose orchestrator",
+	Use:          "gitt",
+	Short:        "gitt — git worktree + docker compose orchestrator",
 	Long:         "Coordinates per-branch git worktrees and their docker compose stacks via a small SQLite-backed daemon.",
 	SilenceUsage: true,
 }
@@ -32,7 +32,7 @@ func requireDaemon() error {
 	}
 	if err := daemon.Ping(sockpath); err != nil {
 		if errors.Is(err, daemon.ErrNotRunning) {
-			return fmt.Errorf("doctree daemon is not running. start it first: doctree on")
+			return fmt.Errorf("gitt daemon is not running. start it first: gitt on")
 		}
 		return err
 	}

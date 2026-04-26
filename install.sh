@@ -1,17 +1,17 @@
 #!/bin/sh
-# doctree installer
-#   curl -fsSL https://raw.githubusercontent.com/foreverfl/doctree/main/install.sh | sh
+# gitt installer
+#   curl -fsSL https://raw.githubusercontent.com/foreverfl/gitt/main/install.sh | sh
 #
 # Env overrides:
-#   DOCTREE_INSTALL_DIR  install destination (default: $HOME/.local/bin)
-#   DOCTREE_VERSION      tag to install (default: latest non-draft release)
+#   GITT_INSTALL_DIR  install destination (default: $HOME/.local/bin)
+#   GITT_VERSION      tag to install (default: latest non-draft release)
 
 set -eu
 
 OWNER=foreverfl
-REPO=doctree
-BIN=doctree
-INSTALL_DIR=${DOCTREE_INSTALL_DIR:-"$HOME/.local/bin"}
+REPO=gitt
+BIN=gitt
+INSTALL_DIR=${GITT_INSTALL_DIR:-"$HOME/.local/bin"}
 
 err() { printf 'install.sh: %s\n' "$*" >&2; exit 1; }
 info() { printf '%s\n' "$*"; }
@@ -33,8 +33,8 @@ detect_arch() {
 }
 
 resolve_version() {
-  if [ -n "${DOCTREE_VERSION:-}" ]; then
-    echo "$DOCTREE_VERSION"
+  if [ -n "${GITT_VERSION:-}" ]; then
+    echo "$GITT_VERSION"
     return
   fi
   curl -fsSL "https://api.github.com/repos/$OWNER/$REPO/releases/latest" \
@@ -50,9 +50,9 @@ main() {
   os=$(detect_os)
   arch=$(detect_arch)
 
-  info "resolving doctree release..."
+  info "resolving gitt release..."
   tag=$(resolve_version)
-  [ -n "$tag" ] || err "failed to resolve release tag (set DOCTREE_VERSION to override)"
+  [ -n "$tag" ] || err "failed to resolve release tag (set GITT_VERSION to override)"
 
   asset="${BIN}_${os}_${arch}.tar.gz"
   url="https://github.com/$OWNER/$REPO/releases/download/$tag/$asset"
@@ -69,7 +69,7 @@ main() {
   mkdir -p "$INSTALL_DIR"
   install -m 0755 "$tmp/$BIN" "$INSTALL_DIR/$BIN"
 
-  runtime_dir="$HOME/.doctree"
+  runtime_dir="$HOME/.gitt"
   mkdir -p "$runtime_dir"
   printf '%s\n' "$tag" > "$runtime_dir/VERSION"
 

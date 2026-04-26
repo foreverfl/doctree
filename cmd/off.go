@@ -3,14 +3,14 @@ package cmd
 import (
 	"os"
 
-	"github.com/foreverfl/doctree/internal/daemon"
-	"github.com/foreverfl/doctree/internal/paths"
+	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/spf13/cobra"
 )
 
 var offCmd = &cobra.Command{
 	Use:   "off",
-	Short: "Stop the doctree daemon",
+	Short: "Stop the gitt daemon",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		sockpath, err := paths.SockPath()
 		if err != nil {

@@ -5,18 +5,18 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/foreverfl/doctree/internal/daemon"
-	"github.com/foreverfl/doctree/internal/paths"
-	"github.com/foreverfl/doctree/internal/process"
-	"github.com/foreverfl/doctree/internal/prompt"
-	"github.com/foreverfl/doctree/internal/release"
-	"github.com/foreverfl/doctree/internal/version"
+	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/paths"
+	"github.com/foreverfl/gitt/internal/process"
+	"github.com/foreverfl/gitt/internal/prompt"
+	"github.com/foreverfl/gitt/internal/release"
+	"github.com/foreverfl/gitt/internal/version"
 	"github.com/spf13/cobra"
 )
 
 var updateCmd = &cobra.Command{
 	Use:   "update",
-	Short: "Update doctree to the latest release",
+	Short: "Update gitt to the latest release",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		current := version.Installed()
 
@@ -58,7 +58,7 @@ var updateCmd = &cobra.Command{
 
 		yes, _ := cmd.Flags().GetBool("yes")
 		if daemonRunning && !yes {
-			ok, err := prompt.Confirm("doctree daemon is running. stop and restart it after update?", true)
+			ok, err := prompt.Confirm("gitt daemon is running. stop and restart it after update?", true)
 			if err != nil {
 				if errors.Is(err, prompt.ErrNoTTY) {
 					return fmt.Errorf("non-interactive shell — pass --yes to confirm")
@@ -107,7 +107,7 @@ var updateCmd = &cobra.Command{
 			if err != nil {
 				return fmt.Errorf("restart daemon: %w", err)
 			}
-			fmt.Printf("doctree daemon started (pid=%d)\n", pid)
+			fmt.Printf("gitt daemon started (pid=%d)\n", pid)
 		}
 		return nil
 	},

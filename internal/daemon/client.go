@@ -10,8 +10,8 @@ import (
 )
 
 // ErrNotRunning is returned when no daemon socket is reachable at the given path.
-// cmd/* surfaces this as the "run doctree on first" hint.
-var ErrNotRunning = errors.New("doctree daemon not running")
+// cmd/* surfaces this as the "run gitt on first" hint.
+var ErrNotRunning = errors.New("gitt daemon not running")
 
 const (
 	dialTimeout = 2 * time.Second
@@ -39,7 +39,7 @@ func Ping(sockPath string) error {
 
 // Call sends a single Request to the daemon and returns its Response.
 // ECONNREFUSED / ENOENT on dial map to ErrNotRunning so callers can give the
-// same "run doctree on first" hint regardless of which failure mode hit.
+// same "run gitt on first" hint regardless of which failure mode hit.
 func Call(sockPath string, req Request) (Response, error) {
 	conn, err := net.DialTimeout("unix", sockPath, dialTimeout)
 	if err != nil {

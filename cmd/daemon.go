@@ -1,16 +1,16 @@
 package cmd
 
 import (
-	"github.com/foreverfl/doctree/internal/daemon"
-	"github.com/foreverfl/doctree/internal/paths"
+	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/spf13/cobra"
 )
 
-// daemonRunCmd is the in-process entrypoint that `doctree on` fork-execs into.
+// daemonRunCmd is the in-process entrypoint that `gitt on` fork-execs into.
 // Hidden from --help: end users don't run this directly.
 var daemonRunCmd = &cobra.Command{
 	Use:    "daemon-run",
-	Short:  "Internal: run the doctree daemon in foreground",
+	Short:  "Internal: run the gitt daemon in foreground",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		sockpath, err := paths.SockPath()

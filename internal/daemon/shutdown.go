@@ -8,7 +8,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/foreverfl/doctree/internal/process"
+	"github.com/foreverfl/gitt/internal/process"
 )
 
 const stopTimeout = 3 * time.Second
@@ -22,7 +22,7 @@ func Shutdown(sockpath, pidpath string, out, errw io.Writer) error {
 	if !hasPid || !process.Alive(pid) {
 		_ = os.Remove(sockpath)
 		_ = os.Remove(pidpath)
-		fmt.Fprintln(out, "doctree daemon not running")
+		fmt.Fprintln(out, "gitt daemon not running")
 		return nil
 	}
 
@@ -31,7 +31,7 @@ func Shutdown(sockpath, pidpath string, out, errw io.Writer) error {
 	if process.WaitExit(pid, stopTimeout) {
 		_ = os.Remove(sockpath)
 		_ = os.Remove(pidpath)
-		fmt.Fprintf(out, "doctree daemon stopped (pid=%d)\n", pid)
+		fmt.Fprintf(out, "gitt daemon stopped (pid=%d)\n", pid)
 		return nil
 	}
 
@@ -46,6 +46,6 @@ func Shutdown(sockpath, pidpath string, out, errw io.Writer) error {
 	}
 	_ = os.Remove(sockpath)
 	_ = os.Remove(pidpath)
-	fmt.Fprintf(out, "doctree daemon stopped via SIGTERM (pid=%d)\n", pid)
+	fmt.Fprintf(out, "gitt daemon stopped via SIGTERM (pid=%d)\n", pid)
 	return nil
 }

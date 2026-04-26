@@ -5,16 +5,16 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/foreverfl/doctree/internal/daemon"
-	"github.com/foreverfl/doctree/internal/paths"
-	"github.com/foreverfl/doctree/internal/prompt"
+	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/paths"
+	"github.com/foreverfl/gitt/internal/prompt"
 	"github.com/spf13/cobra"
 )
 
 var uninstallCmd = &cobra.Command{
 	Use:   "uninstall",
-	Short: "Remove the doctree binary and all runtime data",
-	Long:  "Stops the daemon, deletes ~/.doctree (sock, pid, log, db), then removes the binary itself.",
+	Short: "Remove the gitt binary and all runtime data",
+	Long:  "Stops the daemon, deletes ~/.gitt (sock, pid, log, db), then removes the binary itself.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		binpath, err := os.Executable()
 		if err != nil {
@@ -33,7 +33,7 @@ var uninstallCmd = &cobra.Command{
 			return err
 		}
 
-		fmt.Println("doctree uninstall will remove:")
+		fmt.Println("gitt uninstall will remove:")
 		fmt.Printf("  - runtime: %s (sock, pid, log, db)\n", runtime)
 		fmt.Printf("  - binary:  %s\n", binpath)
 		fmt.Println()
@@ -66,7 +66,7 @@ var uninstallCmd = &cobra.Command{
 			return fmt.Errorf("remove %s: %w", binpath, err)
 		}
 		fmt.Printf("removed %s\n", binpath)
-		fmt.Println("doctree uninstalled.")
+		fmt.Println("gitt uninstalled.")
 		return nil
 	},
 }

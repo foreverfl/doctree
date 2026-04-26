@@ -1,4 +1,4 @@
-// Package store wraps the SQLite database the doctree daemon owns.
+// Package store wraps the SQLite database the gitt daemon owns.
 package store
 
 import (

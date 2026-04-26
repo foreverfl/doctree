@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/foreverfl/doctree/internal/gitx"
-	"github.com/foreverfl/doctree/internal/worktree"
+	"github.com/foreverfl/gitt/internal/gitx"
+	"github.com/foreverfl/gitt/internal/worktree"
 	"github.com/spf13/cobra"
 )
 

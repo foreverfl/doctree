@@ -1,4 +1,4 @@
-// Package banner renders the doctree welcome banner shown on `doctree on`.
+// Package banner renders the gitt welcome banner shown on `gitt on`.
 package banner
 
 import (
@@ -6,7 +6,7 @@ import (
 	"io"
 	"strings"
 
-	"github.com/foreverfl/doctree/assets/logo"
+	"github.com/foreverfl/gitt/assets/logo"
 )
 
 const (
@@ -14,13 +14,13 @@ const (
 	reset   = "\033[0m"
 )
 
-// Print writes the doctree welcome banner to out: art on top, version label
+// Print writes the gitt welcome banner to out: art on top, version label
 // centered below, all wrapped in a sky-blue border. version may be empty.
 func Print(out io.Writer, version string) {
 	art := artLines()
-	label := "doctree"
+	label := "gitt"
 	if version != "" {
-		label = "doctree " + version
+		label = "gitt " + version
 	}
 	width := maxWidth(art...)
 	if count := runeCount(label); count > width {

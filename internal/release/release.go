@@ -1,4 +1,4 @@
-// Package release fetches doctree release artifacts from GitHub.
+// Package release fetches gitt release artifacts from GitHub.
 package release
 
 import (
@@ -17,8 +17,8 @@ import (
 
 const (
 	repoOwner   = "foreverfl"
-	repoName    = "doctree"
-	binName     = "doctree"
+	repoName    = "gitt"
+	binName     = "gitt"
 	httpTimeout = 30 * time.Second
 )
 
@@ -47,7 +47,7 @@ func LatestTag() (string, error) {
 	return body.TagName, nil
 }
 
-// Download streams the release tarball for tag and writes the doctree
+// Download streams the release tarball for tag and writes the gitt
 // binary to outPath with mode 0755. outPath should sit on the same
 // filesystem as the final install location so the caller can atomically
 // os.Rename it onto the running binary.

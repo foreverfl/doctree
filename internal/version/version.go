@@ -1,15 +1,15 @@
-// Package version reports the doctree binary's installed version, as
-// recorded by install.sh in ~/.doctree/VERSION.
+// Package version reports the gitt binary's installed version, as
+// recorded by install.sh in ~/.gitt/VERSION.
 package version
 
 import (
 	"os"
 	"strings"
 
-	"github.com/foreverfl/doctree/internal/paths"
+	"github.com/foreverfl/gitt/internal/paths"
 )
 
-// Installed returns the version recorded by install.sh in ~/.doctree/VERSION,
+// Installed returns the version recorded by install.sh in ~/.gitt/VERSION,
 // or "" if not recorded or unreadable.
 func Installed() string {
 	path, err := paths.VersionPath()

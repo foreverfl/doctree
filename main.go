@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"os"
 
-	"github.com/foreverfl/agent-worktree/cmd"
+	"github.com/foreverfl/doctree/cmd"
 )
 
 func main() {

@@ -9,7 +9,7 @@ import (
 	"syscall"
 	"time"
 
-	"github.com/foreverfl/agent-worktree/internal/daemon"
+	"github.com/foreverfl/doctree/internal/daemon"
 	"github.com/spf13/cobra"
 )
 

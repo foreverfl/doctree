@@ -1,4 +1,4 @@
-module github.com/foreverfl/agent-worktree
+module github.com/foreverfl/doctree
 
 go 1.25.0
 

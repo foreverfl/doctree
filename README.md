@@ -23,7 +23,7 @@ SQLite 백엔드 데몬에서 직렬화해서 막는 게 핵심.
 원라인 설치 (macOS / Linux, amd64 / arm64):
 
 ```bash
-curl -fsSL https://raw.githubusercontent.com/foreverfl/docktree/main/install.sh | sh
+curl -fsSL https://raw.githubusercontent.com/foreverfl/doctree/main/install.sh | sh
 ```
 
 - 기본 설치 위치: `$HOME/.local/bin/doctree` — `DOCTREE_INSTALL_DIR` 로 덮어쓸 수 있음
@@ -37,7 +37,7 @@ curl -fsSL https://raw.githubusercontent.com/foreverfl/docktree/main/install.sh 
 소스 빌드:
 
 ```bash
-git clone https://github.com/foreverfl/docktree ~/code/doctree
+git clone https://github.com/foreverfl/doctree ~/code/doctree
 cd ~/code/doctree
 go build -o ~/.local/bin/doctree .
 ```

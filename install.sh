@@ -1,6 +1,6 @@
 #!/bin/sh
 # doctree installer
-#   curl -fsSL https://raw.githubusercontent.com/foreverfl/docktree/main/install.sh | sh
+#   curl -fsSL https://raw.githubusercontent.com/foreverfl/doctree/main/install.sh | sh
 #
 # Env overrides:
 #   DOCTREE_INSTALL_DIR  install destination (default: $HOME/.local/bin)
@@ -9,7 +9,7 @@
 set -eu
 
 OWNER=foreverfl
-REPO=docktree
+REPO=doctree
 BIN=doctree
 INSTALL_DIR=${DOCTREE_INSTALL_DIR:-"$HOME/.local/bin"}
 

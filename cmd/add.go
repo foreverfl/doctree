@@ -30,11 +30,20 @@ var addCmd = &cobra.Command{
 			return fmt.Errorf("create worktree parent: %w", err)
 		}
 
-		if err := gitx.WorktreeAdd(target, branch); err != nil {
+		exists, err := gitx.BranchExists(branch)
+		if err != nil {
 			return err
 		}
 
-		fmt.Printf("created worktree\n  path:   %s\n  branch: %s\n", target, branch)
+		if err := gitx.WorktreeAdd(target, branch, !exists); err != nil {
+			return err
+		}
+
+		if exists {
+			fmt.Printf("created worktree\n  path:   %s\n  branch: %s\n", target, branch)
+		} else {
+			fmt.Printf("created worktree (new branch)\n  path:   %s\n  branch: %s\n", target, branch)
+		}
 		return nil
 	},
 }

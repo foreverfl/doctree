@@ -93,10 +93,33 @@ func OngoingOp() (string, error) {
 	return "", nil
 }
 
-// WorktreeAdd runs `git worktree add <target> <branch>`, streaming git's
-// progress output to the caller's stdout/stderr.
-func WorktreeAdd(target, branch string) error {
-	cmd := exec.Command("git", "worktree", "add", target, branch)
+// BranchExists reports whether a local branch with the given name exists.
+func BranchExists(branch string) (bool, error) {
+	err := exec.Command("git", "show-ref", "--verify", "--quiet", "refs/heads/"+branch).Run()
+	switch e := err.(type) {
+	case nil:
+		return true, nil
+	case *exec.ExitError:
+		if e.ExitCode() == 1 {
+			return false, nil
+		}
+		return false, fmt.Errorf("git show-ref: %w", err)
+	default:
+		return false, fmt.Errorf("git show-ref: %w", err)
+	}
+}
+
+// WorktreeAdd runs `git worktree add`, streaming git's progress output to the
+// caller's stdout/stderr. When newBranch is true, a new branch is created via
+// `-b`; otherwise the existing ref is checked out into the worktree.
+func WorktreeAdd(target, branch string, newBranch bool) error {
+	args := []string{"worktree", "add"}
+	if newBranch {
+		args = append(args, "-b", branch, target)
+	} else {
+		args = append(args, target, branch)
+	}
+	cmd := exec.Command("git", args...)
 	cmd.Stdout = os.Stdout
 	cmd.Stderr = os.Stderr
 	if err := cmd.Run(); err != nil {

@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"github.com/foreverfl/doctree/internal/daemon"
+	"github.com/foreverfl/doctree/internal/paths"
 	"github.com/spf13/cobra"
 )
 
@@ -12,11 +13,11 @@ var daemonRunCmd = &cobra.Command{
 	Short:  "Internal: run the doctree daemon in foreground",
 	Hidden: true,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		sockpath, err := sockPath()
+		sockpath, err := paths.SockPath()
 		if err != nil {
 			return err
 		}
-		dbpath, err := dbPath()
+		dbpath, err := paths.DBPath()
 		if err != nil {
 			return err
 		}

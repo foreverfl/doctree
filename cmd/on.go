@@ -10,6 +10,8 @@ import (
 	"time"
 
 	"github.com/foreverfl/doctree/internal/daemon"
+	"github.com/foreverfl/doctree/internal/paths"
+	"github.com/foreverfl/doctree/internal/process"
 	"github.com/spf13/cobra"
 )
 
@@ -22,21 +24,21 @@ var onCmd = &cobra.Command{
 	Use:   "on",
 	Short: "Start the doctree daemon",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		sockpath, err := sockPath()
+		sockpath, err := paths.SockPath()
 		if err != nil {
 			return err
 		}
-		pidpath, err := pidPath()
+		pidpath, err := paths.PidPath()
 		if err != nil {
 			return err
 		}
-		logpath, err := logPath()
+		logpath, err := paths.LogPath()
 		if err != nil {
 			return err
 		}
 
 		// Already running? Skip.
-		if pid, ok := readPid(pidpath); ok && processAlive(pid) {
+		if pid, ok := process.ReadPid(pidpath); ok && process.Alive(pid) {
 			if err := daemon.Ping(sockpath); err == nil {
 				fmt.Printf("doctree daemon already running (pid=%d)\n", pid)
 				return nil
@@ -99,4 +101,3 @@ var onCmd = &cobra.Command{
 func init() {
 	rootCmd.AddCommand(onCmd)
 }
-

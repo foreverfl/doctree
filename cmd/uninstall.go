@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/foreverfl/doctree/internal/daemon"
+	"github.com/foreverfl/doctree/internal/paths"
 	"github.com/foreverfl/doctree/internal/prompt"
 	"github.com/spf13/cobra"
 )
@@ -18,7 +20,15 @@ var uninstallCmd = &cobra.Command{
 		if err != nil {
 			return fmt.Errorf("resolve binary path: %w", err)
 		}
-		runtime, err := runtimeDir()
+		runtime, err := paths.RuntimeDir()
+		if err != nil {
+			return err
+		}
+		sockpath, err := paths.SockPath()
+		if err != nil {
+			return err
+		}
+		pidpath, err := paths.PidPath()
 		if err != nil {
 			return err
 		}
@@ -43,7 +53,7 @@ var uninstallCmd = &cobra.Command{
 			}
 		}
 
-		if err := shutdownDaemon(); err != nil {
+		if err := daemon.Shutdown(sockpath, pidpath, os.Stdout, os.Stderr); err != nil {
 			return fmt.Errorf("stop daemon: %w", err)
 		}
 

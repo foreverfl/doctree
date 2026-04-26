@@ -36,6 +36,10 @@ var updateCmd = &cobra.Command{
 			fmt.Printf("updating %s -> %s\n", current, latest)
 		}
 
+		runtime, err := paths.RuntimeDir()
+		if err != nil {
+			return err
+		}
 		sockpath, err := paths.SockPath()
 		if err != nil {
 			return err
@@ -56,9 +60,16 @@ var updateCmd = &cobra.Command{
 			}
 		}
 
+		fmt.Println("update will reset gitt runtime data:")
+		fmt.Printf("  - %s (db, registered worktrees, sock, pid, log)\n", runtime)
+		if daemonRunning {
+			fmt.Println("  - the running daemon will be stopped and restarted")
+		}
+		fmt.Println()
+
 		yes, _ := cmd.Flags().GetBool("yes")
-		if daemonRunning && !yes {
-			ok, err := prompt.Confirm("gitt daemon is running. stop and restart it after update?", true)
+		if !yes {
+			ok, err := prompt.Confirm("proceed?", false)
 			if err != nil {
 				if errors.Is(err, prompt.ErrNoTTY) {
 					return fmt.Errorf("non-interactive shell — pass --yes to confirm")
@@ -88,6 +99,11 @@ var updateCmd = &cobra.Command{
 				_ = os.Remove(newPath)
 				return fmt.Errorf("stop daemon: %w", err)
 			}
+		}
+
+		if err := os.RemoveAll(runtime); err != nil {
+			_ = os.Remove(newPath)
+			return fmt.Errorf("reset %s: %w", runtime, err)
 		}
 
 		if err := os.Rename(newPath, selfPath); err != nil {

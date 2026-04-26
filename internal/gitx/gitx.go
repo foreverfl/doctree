@@ -32,3 +32,16 @@ func WorktreeAdd(target, branch string) error {
 	}
 	return nil
 }
+
+// WorktreeRemove runs `git worktree remove <target>`, streaming git's output
+// to the caller's stdout/stderr. Fails if the worktree has uncommitted or
+// untracked changes; git's own message explains the cause.
+func WorktreeRemove(target string) error {
+	cmd := exec.Command("git", "worktree", "remove", target)
+	cmd.Stdout = os.Stdout
+	cmd.Stderr = os.Stderr
+	if err := cmd.Run(); err != nil {
+		return fmt.Errorf("git worktree remove: %w", err)
+	}
+	return nil
+}

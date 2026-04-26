@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"strings"
 
 	"github.com/foreverfl/doctree/internal/gitx"
+	"github.com/foreverfl/doctree/internal/worktree"
 	"github.com/spf13/cobra"
 )
 
@@ -24,8 +24,7 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		repoName := filepath.Base(repoRoot)
-		target := filepath.Join(filepath.Dir(repoRoot), ".worktrees", repoName, safeBranch(branch))
+		target := worktree.Path(repoRoot, branch)
 
 		if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
 			return fmt.Errorf("create worktree parent: %w", err)
@@ -38,12 +37,6 @@ var addCmd = &cobra.Command{
 		fmt.Printf("created worktree\n  path:   %s\n  branch: %s\n", target, branch)
 		return nil
 	},
-}
-
-// safeBranch turns a git branch name into a single path segment by replacing
-// directory separators with dashes. e.g. "feature/foo" -> "feature-foo".
-func safeBranch(branch string) string {
-	return strings.NewReplacer("/", "-", "\\", "-").Replace(branch)
 }
 
 func init() {

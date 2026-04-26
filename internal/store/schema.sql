@@ -1,9 +1,19 @@
 CREATE TABLE IF NOT EXISTS worktrees (
-  id          INTEGER PRIMARY KEY AUTOINCREMENT,
-  repo_name   TEXT    NOT NULL,
-  branch      TEXT    NOT NULL,
-  path        TEXT    NOT NULL UNIQUE,
-  created_at  INTEGER NOT NULL
+  id               INTEGER PRIMARY KEY AUTOINCREMENT,
+
+  repo_root        TEXT NOT NULL,
+  repo_name        TEXT NOT NULL,
+  branch_name      TEXT NOT NULL,
+  safe_branch_name TEXT NOT NULL,
+  worktree_path    TEXT NOT NULL,
+
+  status           TEXT NOT NULL DEFAULT 'created',
+
+  created_at       TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+  updated_at       TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
+
+  UNIQUE(repo_root, branch_name),
+  UNIQUE(worktree_path)
 );
 
 CREATE TABLE IF NOT EXISTS ports (

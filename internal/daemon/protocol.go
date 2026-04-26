@@ -4,11 +4,12 @@ package daemon
 type Op string
 
 const (
-	OpPing       Op = "ping"
-	OpShutdown   Op = "shutdown"
-	OpRegister   Op = "register"    // create worktree + allocate ports
-	OpRelease    Op = "release"     // delete worktree + free ports
-	OpSqliteTest Op = "sqlite_test" // create+insert+select+drop a scratch table
+	OpPing              Op = "ping"
+	OpShutdown          Op = "shutdown"
+	OpRegisterWorktree  Op = "register_worktree" // persist a worktree row
+	OpListWorktrees     Op = "list_worktrees"    // read all worktree rows
+	OpRelease           Op = "release"           // delete worktree + free ports
+	OpSqliteTest        Op = "sqlite_test"       // create+insert+select+drop a scratch table
 )
 
 type Request struct {

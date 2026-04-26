@@ -1,0 +1,80 @@
+package store
+
+import (
+	_ "embed"
+	"fmt"
+)
+
+//go:embed sql/worktree/insert.sql
+var worktreeInsertSQL string
+
+//go:embed sql/worktree/list.sql
+var worktreeListSQL string
+
+// Worktree is a row of the worktrees table. created_at / updated_at are kept
+// as the raw SQLite TEXT (ISO-8601 UTC) so callers can format or pass them
+// through without imposing a time.Time conversion at the storage layer.
+type Worktree struct {
+	ID             int64  `json:"id"`
+	RepoRoot       string `json:"repo_root"`
+	RepoName       string `json:"repo_name"`
+	BranchName     string `json:"branch_name"`
+	SafeBranchName string `json:"safe_branch_name"`
+	WorktreePath   string `json:"worktree_path"`
+	Status         string `json:"status"`
+	CreatedAt      string `json:"created_at"`
+	UpdatedAt      string `json:"updated_at"`
+}
+
+// InsertWorktree persists a new worktree row and returns the populated record
+// (id and timestamps filled in by SQLite). Returns an error when (repo_root,
+// branch_name) or worktree_path is already taken.
+func (store *Store) InsertWorktree(repoRoot, repoName, branchName, safeBranchName, worktreePath string) (Worktree, error) {
+	worktree := Worktree{
+		RepoRoot:       repoRoot,
+		RepoName:       repoName,
+		BranchName:     branchName,
+		SafeBranchName: safeBranchName,
+		WorktreePath:   worktreePath,
+	}
+	row := store.db.QueryRow(
+		worktreeInsertSQL,
+		repoRoot, repoName, branchName, safeBranchName, worktreePath,
+	)
+	if err := row.Scan(&worktree.ID, &worktree.Status, &worktree.CreatedAt, &worktree.UpdatedAt); err != nil {
+		return Worktree{}, fmt.Errorf("insert worktree: %w", err)
+	}
+	return worktree, nil
+}
+
+// ListWorktrees returns every worktree row, sorted by repo then branch.
+func (store *Store) ListWorktrees() ([]Worktree, error) {
+	rows, err := store.db.Query(worktreeListSQL)
+	if err != nil {
+		return nil, fmt.Errorf("list worktrees: %w", err)
+	}
+	defer rows.Close()
+
+	var worktrees []Worktree
+	for rows.Next() {
+		var worktree Worktree
+		if err := rows.Scan(
+			&worktree.ID,
+			&worktree.RepoRoot,
+			&worktree.RepoName,
+			&worktree.BranchName,
+			&worktree.SafeBranchName,
+			&worktree.WorktreePath,
+			&worktree.Status,
+			&worktree.CreatedAt,
+			&worktree.UpdatedAt,
+		); err != nil {
+			return nil, fmt.Errorf("scan worktree: %w", err)
+		}
+		worktrees = append(worktrees, worktree)
+	}
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("iterate worktrees: %w", err)
+	}
+	return worktrees, nil
+}

@@ -63,6 +63,8 @@ func Run(sockPath, dbPath string) error {
 			}
 			return Response{OK: true, Data: map[string]any{"message": summary}}
 		},
+		OpRegisterWorktree: server.handleRegisterWorktree,
+		OpListWorktrees:    server.handleListWorktrees,
 	}
 
 	sigCh := make(chan os.Signal, 1)

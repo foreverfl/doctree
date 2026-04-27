@@ -5,9 +5,7 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/foreverfl/gitt/internal/daemon"
 	"github.com/foreverfl/gitt/internal/gitx"
-	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/foreverfl/gitt/internal/worktree"
 	"github.com/spf13/cobra"
 )
@@ -34,7 +32,7 @@ var addCmd = &cobra.Command{
 		}
 		if existingPath != "" {
 			fmt.Printf("branch '%s' is already checked out\n  path:   %s\n", branch, existingPath)
-			if err := registerWorktree(mainRoot, branch, existingPath); err != nil {
+			if err := worktree.Register(mainRoot, branch, existingPath); err != nil {
 				fmt.Fprintf(os.Stderr, "warning: daemon registration failed: %v\n", err)
 			}
 			return nil
@@ -49,11 +47,11 @@ var addCmd = &cobra.Command{
 			return err
 		}
 
-		if err := gitx.WorktreeAdd(target, branch, !exists); err != nil {
+		if err := gitx.WorktreeAdd("", target, branch, !exists); err != nil {
 			return err
 		}
 
-		if err := registerWorktree(mainRoot, branch, target); err != nil {
+		if err := worktree.Register(mainRoot, branch, target); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: worktree created but daemon registration failed: %v\n", err)
 		}
 
@@ -65,30 +63,6 @@ var addCmd = &cobra.Command{
 		fmt.Printf("\nOpen a new terminal, then run:\n  cd %s\n  # start your AI CLI here\n", target)
 		return nil
 	},
-}
-
-func registerWorktree(mainRoot, branch, target string) error {
-	sockpath, err := paths.SockPath()
-	if err != nil {
-		return err
-	}
-	response, err := daemon.Call(sockpath, daemon.Request{
-		Op: daemon.OpRegisterWorktree,
-		Args: map[string]any{
-			"repo_root":        mainRoot,
-			"repo_name":        filepath.Base(mainRoot),
-			"branch_name":      branch,
-			"safe_branch_name": worktree.SafeBranch(branch),
-			"worktree_path":    target,
-		},
-	})
-	if err != nil {
-		return err
-	}
-	if !response.OK {
-		return fmt.Errorf("%s", response.Error)
-	}
-	return nil
 }
 
 func init() {

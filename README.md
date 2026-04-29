@@ -19,7 +19,7 @@ without thinking about worktrees, branches, or compose configuration.
 | --- | --- |
 | `gitt on` | Start the daemon (`~/.gitt/gitt.sock`, `~/.gitt/gitt.db`). Prints the boxed logo banner only when `[ui] logo_enabled = true` in `~/.gitt/config.toml` (default: off). Toggle with `gitt logo`. |
 | `gitt off` | Stop the daemon |
-| `gitt add <branch>` | Create a worktree at `<repo>/.worktrees/<branch>`. Checks out the branch if it exists, creates a new one otherwise. `/` and `\` in branch names are converted to `-`. If the branch is already checked out somewhere (e.g. `main` in the repo root), the existing path is reported and registered with the daemon — no new worktree is created. **Requires daemon** |
+| `gitt add <branch>` | Create a worktree at `<repo>/.worktrees/<branch>`. Checks out the branch if it exists, creates a new one otherwise. `/` and `\` in branch names are converted to `-`. If the branch is already checked out somewhere (e.g. `main` in the repo root), the existing path is reported and registered with the daemon — no new worktree is created. Add `--print-path` to suppress human-readable output and print only the worktree path to stdout (useful for shell wrappers). **Requires daemon** |
 | `gitt remove <branch>` | Remove the worktree folder for the given branch (`git worktree remove`). **Requires daemon** |
 | `gitt rename <old> <new>` | Rename a branch and its worktree folder together. Updates `<repo>/.worktrees/<old>` → `<repo>/.worktrees/<new>`, renames the branch, and updates the daemon record in one step. **Requires daemon** |
 | `gitt status` | Print the current worktree's repository, branch, path, and state (clean/dirty/rebase/merge/conflict, etc.) |
@@ -62,6 +62,34 @@ ignore  = ["dist", "build", ".next", ".cache", "target"]
 
 **Editor tip:** Add `export EDITOR="code --wait"` to your shell rc to use VS Code.
 The `--wait` flag is required so the editor blocks until you close the file.
+
+## Shell wrapper (optional)
+
+A binary cannot `cd` its parent shell. Without a wrapper, `gitt add` prints a
+"Open a new terminal, then run: cd ..." hint and you must copy-paste it
+yourself. The wrapper below intercepts `gitt add`, captures the worktree path
+via `--print-path`, and changes directory for you automatically.
+
+Paste into `~/.zshrc` or `~/.bashrc`, then `source` the file (or open a new
+terminal):
+
+```sh
+# gitt — auto-cd into the new worktree on `gitt add`.
+gitt() {
+  if [ "$1" = "add" ]; then
+    shift
+    target="$(command gitt add --print-path "$@")" || return $?
+    [ -n "$target" ] && cd "$target"
+  else
+    command gitt "$@"
+  fi
+}
+```
+
+When `--print-path` is set, all human-readable progress goes to stderr and
+stdout contains exactly one line — the absolute path of the worktree — which
+the wrapper captures. Without the wrapper, `gitt add` behaves exactly as
+before.
 
 ## Install
 

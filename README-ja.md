@@ -19,7 +19,7 @@ Git, GitHub, Docker に詳しくなくても、ブランチごとに隔離され
 | --- | --- |
 | `gitt on` | デーモン起動 (`~/.gitt/gitt.sock`, `~/.gitt/gitt.db`)。`~/.gitt/config.toml` に `[ui] logo_enabled = true` が設定されている場合のみ、起動時にボックス型ロゴバナーを表示（デフォルト: 非表示）。`gitt logo` でトグル可能。 |
 | `gitt off` | デーモン停止 |
-| `gitt add <branch>` | `<repo>/.worktrees/<branch>` に worktree を作成。ブランチが存在すればチェックアウト、なければ新規作成。ブランチ名の `/`・`\` は `-` に変換される。対象ブランチがすでにどこかにチェックアウト済み（例: リポジトリルートの `main`）の場合は、新規作成せず既存パスを通知してデーモンに登録する。**デーモン必須** |
+| `gitt add <branch>` | `<repo>/.worktrees/<branch>` に worktree を作成。ブランチが存在すればチェックアウト、なければ新規作成。ブランチ名の `/`・`\` は `-` に変換される。対象ブランチがすでにどこかにチェックアウト済み（例: リポジトリルートの `main`）の場合は、新規作成せず既存パスを通知してデーモンに登録する。`--print-path` を付けると人向けの出力を stderr に送り、stdout には worktree の絶対パスのみを 1 行出力する（シェルラッパー向け）。**デーモン必須** |
 | `gitt remove <branch>` | 指定ブランチの worktree フォルダを削除 (`git worktree remove`)。**デーモン必須** |
 | `gitt rename <old> <new>` | ブランチと worktree フォルダを同時にリネーム。`<repo>/.worktrees/<old>` → `<repo>/.worktrees/<new>` への移動、ブランチ名の変更、デーモンレコードの更新を一括で実行。**デーモン必須** |
 | `gitt status` | 現在の worktree のリポジトリ、ブランチ、パス、状態 (clean/dirty/rebase/merge/conflict など) を出力 |
@@ -61,6 +61,32 @@ ignore  = ["dist", "build", ".next", ".cache", "target"]
 
 **エディタのヒント:** シェル rc に `export EDITOR="code --wait"` を追加すると VS Code が使える。
 `--wait` フラグは必須 — ファイルを閉じるまでエディタがブロックする必要がある。
+
+## シェルラッパー (任意)
+
+バイナリは親シェルのカレントディレクトリを変更できない。ラッパーなしで `gitt add`
+を実行すると "新しいターミナルを開いて cd ... を実行してください" という案内が
+表示され、手動でコピー&ペーストする必要がある。以下のラッパーを使うと `gitt add`
+を横取りし、`--print-path` で取得した worktree パスへ自動で移動する。
+
+`~/.zshrc` または `~/.bashrc` に貼り付け、`source` するか新しいターミナルを開く:
+
+```sh
+# gitt — auto-cd into the new worktree on `gitt add`.
+gitt() {
+  if [ "$1" = "add" ]; then
+    shift
+    target="$(command gitt add --print-path "$@")" || return $?
+    [ -n "$target" ] && cd "$target"
+  else
+    command gitt "$@"
+  fi
+}
+```
+
+`--print-path` を指定すると、進行状況のメッセージは stderr に送られ、stdout
+には worktree の絶対パスが 1 行だけ出力される — ラッパーがその値を受け取って
+移動する。ラッパーなしで使う場合、`gitt add` の動作はこれまでと変わらない。
 
 ## Install
 

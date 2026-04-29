@@ -10,7 +10,6 @@ import (
 	"github.com/foreverfl/gitt/internal/process"
 	"github.com/foreverfl/gitt/internal/prompt"
 	"github.com/foreverfl/gitt/internal/release"
-	"github.com/foreverfl/gitt/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -32,7 +31,7 @@ registered worktree folders on disk are also left untouched.
 
 Use -y/--yes to skip the confirmation prompt.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
-		current := version.Installed()
+		current := paths.InstalledVersion()
 
 		fmt.Println("checking latest release...")
 		latest, err := release.LatestTag()

@@ -4,9 +4,9 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/foreverfl/gitt/internal/daemon"
 	"github.com/foreverfl/gitt/internal/gitx"
 	"github.com/foreverfl/gitt/internal/worktree"
-	"github.com/foreverfl/gitt/internal/worktreeclient"
 	"github.com/spf13/cobra"
 )
 
@@ -38,7 +38,7 @@ var removeCmd = &cobra.Command{
 			return err
 		}
 
-		if err := worktreeclient.Release(mainRoot, branch); err != nil {
+		if err := daemon.ReleaseWorktree(mainRoot, branch); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: worktree removed but daemon record cleanup failed: %v\n", err)
 		}
 

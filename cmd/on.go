@@ -8,7 +8,6 @@ import (
 	"github.com/foreverfl/gitt/internal/daemon"
 	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/foreverfl/gitt/internal/process"
-	"github.com/foreverfl/gitt/internal/version"
 	"github.com/spf13/cobra"
 )
 
@@ -50,7 +49,7 @@ var onCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		banner.Print(os.Stdout, version.Installed())
+		banner.Print(os.Stdout, paths.InstalledVersion())
 		fmt.Printf("gitt daemon started (pid=%d)\n", pid)
 		return nil
 	},

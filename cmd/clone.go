@@ -5,8 +5,8 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/foreverfl/gitt/internal/daemon"
 	"github.com/foreverfl/gitt/internal/gitx"
-	"github.com/foreverfl/gitt/internal/worktreeclient"
 	"github.com/spf13/cobra"
 )
 
@@ -61,7 +61,7 @@ var cloneCmd = &cobra.Command{
 			return err
 		}
 
-		if err := worktreeclient.TryRegister(absTarget, defaultBranch, worktreePath); err != nil {
+		if err := daemon.TryRegisterWorktree(absTarget, defaultBranch, worktreePath); err != nil {
 			fmt.Fprintf(os.Stderr, "warning: daemon registration failed: %v\n", err)
 		}
 

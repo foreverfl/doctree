@@ -16,6 +16,12 @@ import (
 var onCmd = &cobra.Command{
 	Use:   "on",
 	Short: "Start the gitt daemon",
+	Long: "Starts the gitt daemon process in the background and prints\n" +
+		"`gitt daemon started (pid=...)` when ready.\n\n" +
+		"If the daemon is already running the command exits immediately.\n\n" +
+		"When `[ui] logo_enabled = true` in ~/.gitt/config.toml the gitt\n" +
+		"logo banner is printed before the startup message. Use `gitt logo`\n" +
+		"to toggle this. Logo display is disabled by default.",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		sockpath, err := paths.SockPath()
 		if err != nil {

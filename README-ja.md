@@ -17,7 +17,7 @@ Git, GitHub, Docker に詳しくなくても、ブランチごとに隔離され
 
 | コマンド | 動作 |
 | --- | --- |
-| `gitt on` | デーモン起動 (`~/.gitt/gitt.sock`, `~/.gitt/gitt.db`) |
+| `gitt on` | デーモン起動 (`~/.gitt/gitt.sock`, `~/.gitt/gitt.db`)。`~/.gitt/config.toml` に `[ui] logo_enabled = true` が設定されている場合のみ、起動時にボックス型ロゴバナーを表示（デフォルト: 非表示）。`gitt logo` でトグル可能。 |
 | `gitt off` | デーモン停止 |
 | `gitt add <branch>` | `<repo>/.worktrees/<branch>` に worktree を作成。ブランチが存在すればチェックアウト、なければ新規作成。ブランチ名の `/`・`\` は `-` に変換される。対象ブランチがすでにどこかにチェックアウト済み（例: リポジトリルートの `main`）の場合は、新規作成せず既存パスを通知してデーモンに登録する。**デーモン必須** |
 | `gitt remove <branch>` | 指定ブランチの worktree フォルダを削除 (`git worktree remove`)。**デーモン必須** |
@@ -28,7 +28,7 @@ Git, GitHub, Docker に詳しくなくても、ブランチごとに隔離され
 | `gitt config` | `~/.gitt/config.toml` をエディタで開く。初回実行時はデフォルト値でファイルを作成し、以降は既存ファイルをそのまま開く。エディタの解決順: `$VISUAL` → `$EDITOR` → `vi`。`code --wait` のような値も動作 — コマンドを空白で分割して実行する。デーモン不要。 |
 | `gitt update` | 最新リリースを取得してインストール。デーモン停止 → 登録済み worktree フォルダを強制削除（未コミット・untracked の変更は復元不可）→ 各リポジトリで `git worktree prune` → `~/.gitt/` 削除 → バイナリ差し替え。`-y`/`--yes` で確認プロンプトをスキップ |
 | `gitt version` | インストール済みの gitt バージョンを表示 |
-| `gitt logo` | gitt のロゴアートを水色のボックスで表示 |
+| `gitt logo` | gitt のロゴアートを表示し、`gitt on` 起動時にロゴを表示するかどうかをインタラクティブにトグル。選択内容を `~/.gitt/config.toml` の `[ui] logo_enabled` に保存する。インタラクティブなターミナル（stdin が TTY）が必要。 |
 | `gitt uninstall` | デーモン停止 → `~/.gitt/` 削除 → バイナリ削除。`-y`/`--yes` で確認プロンプトをスキップ |
 
 デーモンが必須のコマンドはデーモンが起動していない場合、即座にエラーで停止し
@@ -39,12 +39,18 @@ Git, GitHub, Docker に詳しくなくても、ブランチごとに隔離され
 `gitt config` は `~/.gitt/config.toml` をエディタで開く。初回実行時はデフォルト値でファイルを作成する。スキーマ:
 
 ```toml
+[ui]
+# Whether `gitt on` prints the boxed logo banner on startup.
+# Toggle this with `gitt logo`.
+logo_enabled = false
+
 [worktree]
 copy    = [".env", ".env.local", ".env.development", ".envrc", ".npmrc", ".nvmrc"]
 symlink = ["node_modules", ".venv"]
 ignore  = ["dist", "build", ".next", ".cache", "target"]
 ```
 
+- `logo_enabled` — `gitt on` 起動時にボックス型ロゴバナーを表示するかどうかを制御する。ファイルを直接編集するより `gitt logo` でトグルする方が簡単。
 - `copy` — 新しい worktree にコピーされるファイル（env・シークレット等、共有しないもの）。
 - `symlink` — 新しい worktree にシンボリックリンクされるパス（重複を避けたい重いディレクトリ）。
 - `ignore` — 新しい worktree のシード時にスキップするパス（ビルド成果物、キャッシュ等）。

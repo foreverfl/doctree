@@ -12,10 +12,13 @@ import (
 
 var logoCmd = &cobra.Command{
 	Use:   "logo",
-	Short: "Show the logo and toggle whether `gitt on` prints it on startup",
-	Long: "Prints the gitt logo art and asks whether to enable it on\n" +
-		"`gitt on` startup. The choice is persisted to ~/.gitt/config.toml\n" +
-		"as `[ui] logo_enabled`. Default is disabled.",
+	Short: "Print the logo and toggle whether it appears on `gitt on` startup",
+	Long: "Prints the gitt logo art, then prompts:\n\n" +
+		"  Show this logo on `gitt on` startup? [y/N]\n\n" +
+		"The default shown in brackets reflects the current value. Answering\n" +
+		"yes or no persists the choice to ~/.gitt/config.toml as\n" +
+		"`[ui] logo_enabled`. Logo display is disabled by default.\n\n" +
+		"Requires an interactive terminal (stdin must be a TTY).",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		ui.Logo(os.Stdout)
 

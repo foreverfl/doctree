@@ -17,7 +17,7 @@ without thinking about worktrees, branches, or compose configuration.
 
 | Command | Description |
 | --- | --- |
-| `gitt on` | Start the daemon (`~/.gitt/gitt.sock`, `~/.gitt/gitt.db`) |
+| `gitt on` | Start the daemon (`~/.gitt/gitt.sock`, `~/.gitt/gitt.db`). Prints the boxed logo banner only when `[ui] logo_enabled = true` in `~/.gitt/config.toml` (default: off). Toggle with `gitt logo`. |
 | `gitt off` | Stop the daemon |
 | `gitt add <branch>` | Create a worktree at `<repo>/.worktrees/<branch>`. Checks out the branch if it exists, creates a new one otherwise. `/` and `\` in branch names are converted to `-`. If the branch is already checked out somewhere (e.g. `main` in the repo root), the existing path is reported and registered with the daemon — no new worktree is created. **Requires daemon** |
 | `gitt remove <branch>` | Remove the worktree folder for the given branch (`git worktree remove`). **Requires daemon** |
@@ -28,7 +28,7 @@ without thinking about worktrees, branches, or compose configuration.
 | `gitt config` | Open `~/.gitt/config.toml` in your editor. Creates the file from built-in defaults on first run; otherwise opens the existing file. Editor is resolved in order: `$VISUAL` → `$EDITOR` → `vi`. Values like `code --wait` work — the command is split on whitespace. Does not require the daemon. |
 | `gitt update` | Fetch the latest release and install it. Shuts down the daemon, force-deletes all registered worktree folders (uncommitted and untracked changes are unrecoverable), runs `git worktree prune` on each repo, then removes `~/.gitt/` and replaces the binary. Use `-y`/`--yes` to skip the prompt |
 | `gitt version` | Print the installed gitt version |
-| `gitt logo` | Print the gitt logo art in a sky-blue box |
+| `gitt logo` | Print the gitt logo art and interactively toggle whether `gitt on` shows it on startup. Persists the choice to `~/.gitt/config.toml` as `[ui] logo_enabled`. Requires an interactive terminal (stdin must be a TTY). |
 | `gitt uninstall` | Stop the daemon → remove `~/.gitt/` → remove the binary. Use `-y`/`--yes` to skip the confirmation prompt |
 
 Daemon-dependent commands fail fast with a `gitt on` hint when the daemon is not
@@ -40,12 +40,18 @@ running. (No auto-start.)
 built-in defaults on first run. Schema:
 
 ```toml
+[ui]
+# Whether `gitt on` prints the boxed logo banner on startup.
+# Toggle this with `gitt logo`.
+logo_enabled = false
+
 [worktree]
 copy    = [".env", ".env.local", ".env.development", ".envrc", ".npmrc", ".nvmrc"]
 symlink = ["node_modules", ".venv"]
 ignore  = ["dist", "build", ".next", ".cache", "target"]
 ```
 
+- `logo_enabled` — controls whether `gitt on` prints the boxed logo banner. Easier to flip with `gitt logo` than editing the file directly.
 - `copy` — files copied into each new worktree (env/secret files that should not be shared).
 - `symlink` — paths symlinked into each new worktree (heavy directories you do not want duplicated).
 - `ignore` — paths skipped when seeding a new worktree (build outputs, caches).

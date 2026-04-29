@@ -1,0 +1,15 @@
+# gitt configuration. Edit this file with `gitt config`.
+# Lists below override the built-in defaults. To restore a default,
+# delete the corresponding key (or the whole file).
+
+[worktree]
+# Files copied into each new worktree (typically env/secret files
+# that aren't committed but are needed at runtime).
+copy = [".env", ".env.local", ".env.development", ".envrc", ".npmrc", ".nvmrc"]
+
+# Paths symlinked into each new worktree (typically heavy directories
+# you don't want duplicated per worktree).
+symlink = ["node_modules", ".venv"]
+
+# Paths skipped when seeding a new worktree (build outputs, caches).
+ignore = ["dist", "build", ".next", ".cache", "target"]

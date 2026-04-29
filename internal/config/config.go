@@ -23,7 +23,12 @@ var defaultTOML []byte
 // Config mirrors config.toml. Sections are flat for now; add more as
 // features land.
 type Config struct {
+	UI       UISection       `toml:"ui"`
 	Worktree WorktreeSection `toml:"worktree"`
+}
+
+type UISection struct {
+	LogoEnabled bool `toml:"logo_enabled"`
 }
 
 type WorktreeSection struct {
@@ -49,6 +54,28 @@ func Load() (*Config, error) {
 		return nil, fmt.Errorf("read config %s: %w", path, err)
 	}
 	return decode(raw)
+}
+
+// Save writes cfg to ~/.gitt/config.toml, creating the directory if
+// needed. Comments and formatting from any prior file are not
+// preserved — gitt commands like `gitt logo` use this to flip a setting,
+// and the canonical comment template lives in the embedded default.toml.
+func Save(cfg *Config) error {
+	path, err := paths.ConfigPath()
+	if err != nil {
+		return err
+	}
+	if err := os.MkdirAll(filepath.Dir(path), 0o755); err != nil {
+		return fmt.Errorf("mkdir config dir: %w", err)
+	}
+	raw, err := toml.Marshal(cfg)
+	if err != nil {
+		return fmt.Errorf("encode config: %w", err)
+	}
+	if err := os.WriteFile(path, raw, 0o644); err != nil {
+		return fmt.Errorf("write config %s: %w", path, err)
+	}
+	return nil
 }
 
 // EnsureFile creates ~/.gitt/config.toml from the embedded defaults if it

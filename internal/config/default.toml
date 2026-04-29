@@ -1,6 +1,11 @@
 # gitt configuration. Edit this file with `gitt config`.
-# Lists below override the built-in defaults. To restore a default,
+# Values below override the built-in defaults. To restore a default,
 # delete the corresponding key (or the whole file).
+
+[ui]
+# Whether `gitt on` prints the boxed logo banner on startup.
+# Toggle this with `gitt logo`.
+logo_enabled = false
 
 [worktree]
 # Files copied into each new worktree (typically env/secret files

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/foreverfl/gitt/internal/config"
 	"github.com/foreverfl/gitt/internal/daemon/client"
 	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/foreverfl/gitt/internal/process"
@@ -50,7 +51,9 @@ var onCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		ui.Banner(os.Stdout, release.Installed())
+		if cfg, err := config.Load(); err == nil && cfg.UI.LogoEnabled {
+			ui.Banner(os.Stdout, release.Installed())
+		}
 		fmt.Printf("gitt daemon started (pid=%d)\n", pid)
 		return nil
 	},

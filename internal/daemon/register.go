@@ -82,6 +82,31 @@ func ListWorktrees() ([]store.Worktree, error) {
 	return worktrees, nil
 }
 
+// RenameWorktree asks the daemon to rename a branch and move its worktree
+// folder atomically. The daemon performs `git branch -m`, `git worktree
+// move`, and the row update; failures roll back in reverse order.
+func RenameWorktree(mainRoot, oldBranch, newBranch string) error {
+	sockpath, err := paths.SockPath()
+	if err != nil {
+		return err
+	}
+	response, err := Call(sockpath, Request{
+		Op: OpRenameWorktree,
+		Args: map[string]any{
+			"repo_root":  mainRoot,
+			"old_branch": oldBranch,
+			"new_branch": newBranch,
+		},
+	})
+	if err != nil {
+		return err
+	}
+	if !response.OK {
+		return fmt.Errorf("%s", response.Error)
+	}
+	return nil
+}
+
 // SqliteTest asks the daemon to run its scratch-table self-test and returns
 // the human-readable summary line. Used by `gitt sqlite` to confirm the
 // daemon's database connection is healthy.

@@ -7,7 +7,6 @@ import (
 
 	"github.com/foreverfl/gitt/internal/daemon"
 	"github.com/foreverfl/gitt/internal/gitx"
-	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/foreverfl/gitt/internal/worktree"
 	"github.com/spf13/cobra"
 )
@@ -34,23 +33,8 @@ var renameCmd = &cobra.Command{
 			return err
 		}
 
-		sockpath, err := paths.SockPath()
-		if err != nil {
-			return err
-		}
-		response, err := daemon.Call(sockpath, daemon.Request{
-			Op: daemon.OpRenameWorktree,
-			Args: map[string]any{
-				"repo_root":  mainRoot,
-				"old_branch": oldBranch,
-				"new_branch": newBranch,
-			},
-		})
-		if err != nil {
-			return err
-		}
-		if !response.OK {
-			return fmt.Errorf("rename failed: %s", response.Error)
+		if err := daemon.RenameWorktree(mainRoot, oldBranch, newBranch); err != nil {
+			return fmt.Errorf("rename failed: %w", err)
 		}
 
 		newPath := worktree.Path(mainRoot, newBranch)

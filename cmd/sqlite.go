@@ -1,11 +1,9 @@
 package cmd
 
 import (
-	"errors"
 	"fmt"
 
 	"github.com/foreverfl/gitt/internal/daemon"
-	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/spf13/cobra"
 )
 
@@ -17,21 +15,13 @@ var sqliteCmd = &cobra.Command{
 		"daemon's database connection is healthy.\n\n" +
 		"Requires `gitt on` to be running.",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		sockpath, err := paths.SockPath()
-		if err != nil {
+		if err := requireDaemon(); err != nil {
 			return err
 		}
-		response, err := daemon.Call(sockpath, daemon.Request{Op: daemon.OpSqliteTest})
+		message, err := daemon.SqliteTest()
 		if err != nil {
-			if errors.Is(err, daemon.ErrNotRunning) {
-				return fmt.Errorf("gitt daemon not running. start it with `gitt on`")
-			}
-			return err
+			return fmt.Errorf("sqlite test failed: %w", err)
 		}
-		if !response.OK {
-			return fmt.Errorf("sqlite test failed: %s", response.Error)
-		}
-		message, _ := response.Data["message"].(string)
 		fmt.Println(message)
 		return nil
 	},

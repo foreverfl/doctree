@@ -6,7 +6,6 @@ import (
 
 	"github.com/foreverfl/gitt/internal/daemon/client"
 	"github.com/foreverfl/gitt/internal/gitx"
-	"github.com/foreverfl/gitt/internal/worktree"
 	"github.com/spf13/cobra"
 )
 
@@ -24,7 +23,7 @@ var removeCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		target := worktree.Path(mainRoot, branch)
+		target := gitx.WorktreePath(mainRoot, branch)
 
 		if _, err := os.Stat(target); err != nil {
 			if os.IsNotExist(err) {

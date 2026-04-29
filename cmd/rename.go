@@ -7,7 +7,6 @@ import (
 
 	"github.com/foreverfl/gitt/internal/daemon/client"
 	"github.com/foreverfl/gitt/internal/gitx"
-	"github.com/foreverfl/gitt/internal/worktree"
 	"github.com/spf13/cobra"
 )
 
@@ -37,11 +36,11 @@ var renameCmd = &cobra.Command{
 			return fmt.Errorf("rename failed: %w", err)
 		}
 
-		newPath := worktree.Path(mainRoot, newBranch)
+		newPath := gitx.WorktreePath(mainRoot, newBranch)
 		fmt.Printf("renamed\n  branch: %s -> %s\n  path:   %s\n", oldBranch, newBranch, newPath)
 
 		cwd, _ := os.Getwd()
-		oldPath := worktree.Path(mainRoot, oldBranch)
+		oldPath := gitx.WorktreePath(mainRoot, oldBranch)
 		if cwd == oldPath {
 			fmt.Printf("\nYour shell is still at the old path. cd here:\n  cd %s\n", newPath)
 		}

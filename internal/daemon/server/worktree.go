@@ -7,7 +7,6 @@ import (
 
 	"github.com/foreverfl/gitt/internal/daemon"
 	"github.com/foreverfl/gitt/internal/gitx"
-	"github.com/foreverfl/gitt/internal/worktree"
 )
 
 // handleRegisterWorktree persists a worktree row from the request args.
@@ -57,8 +56,8 @@ func (s *server) handleRenameWorktree(req daemon.Request) daemon.Response {
 		return daemon.Response{OK: false, Error: fmt.Sprintf("not registered with gitt: %s", err)}
 	}
 
-	newSafe := worktree.SafeBranch(args.NewBranch)
-	newPath := worktree.Path(args.RepoRoot, args.NewBranch)
+	newSafe := gitx.SafeBranch(args.NewBranch)
+	newPath := gitx.WorktreePath(args.RepoRoot, args.NewBranch)
 
 	if existing.WorktreePath == newPath {
 		return daemon.Response{OK: false, Error: fmt.Sprintf("new branch %q resolves to the same path", args.NewBranch)}

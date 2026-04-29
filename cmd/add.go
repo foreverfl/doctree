@@ -7,7 +7,6 @@ import (
 
 	"github.com/foreverfl/gitt/internal/daemon/client"
 	"github.com/foreverfl/gitt/internal/gitx"
-	"github.com/foreverfl/gitt/internal/worktree"
 	"github.com/spf13/cobra"
 )
 
@@ -25,7 +24,7 @@ var addCmd = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		target := worktree.Path(mainRoot, branch)
+		target := gitx.WorktreePath(mainRoot, branch)
 
 		existingPath, err := gitx.WorktreeForBranch(branch)
 		if err != nil {

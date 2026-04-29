@@ -6,9 +6,9 @@ import (
 	"path/filepath"
 
 	"github.com/foreverfl/gitt/internal/daemon"
+	"github.com/foreverfl/gitt/internal/gitx"
 	"github.com/foreverfl/gitt/internal/paths"
 	"github.com/foreverfl/gitt/internal/store"
-	"github.com/foreverfl/gitt/internal/worktree"
 )
 
 // RegisterWorktree tells the running daemon about a worktree. Returns an error
@@ -22,7 +22,7 @@ func RegisterWorktree(mainRoot, branch, target string) error {
 		RepoRoot:       mainRoot,
 		RepoName:       filepath.Base(mainRoot),
 		BranchName:     branch,
-		SafeBranchName: worktree.SafeBranch(branch),
+		SafeBranchName: gitx.SafeBranch(branch),
 		WorktreePath:   target,
 	})
 	if err != nil {

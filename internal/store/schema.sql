@@ -23,15 +23,16 @@ CREATE TABLE IF NOT EXISTS repos (
   updated_at        TEXT    NOT NULL
 );
 
--- worktrees is one row per checked-out branch under a repo. Today the link
--- to a repo is the denormalised repo_root TEXT (with repo_name alongside);
--- a follow-up commit replaces that pair with a repo_id FK to repos(id) once
--- the daemon's RegisterWorktree flow learns to upsert a repos row first.
+-- worktrees is one row per checked-out branch under a repo, linked to its
+-- parent via repo_id. ON DELETE CASCADE makes "drop a repo" remove every
+-- worktree underneath it, and the same chain through ports cascades down
+-- to the per-worktree port rows. Callers that only have a filesystem path
+-- (e.g. `gitt add` running from cwd) join through repos.root_path to find
+-- the right repo_id rather than denormalising the path back into this row.
 CREATE TABLE IF NOT EXISTS worktrees (
   id               INTEGER PRIMARY KEY AUTOINCREMENT,
 
-  repo_root        TEXT NOT NULL,
-  repo_name        TEXT NOT NULL,
+  repo_id          INTEGER NOT NULL,
   branch_name      TEXT NOT NULL,
   safe_branch_name TEXT NOT NULL,
   worktree_path    TEXT NOT NULL,
@@ -41,8 +42,9 @@ CREATE TABLE IF NOT EXISTS worktrees (
   created_at       TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
   updated_at       TEXT NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
-  UNIQUE(repo_root, branch_name),
-  UNIQUE(worktree_path)
+  FOREIGN KEY (repo_id) REFERENCES repos(id) ON DELETE CASCADE,
+  UNIQUE (repo_id, branch_name),
+  UNIQUE (worktree_path)
 );
 
 -- ports records each host:container port mapping a worktree currently owns.

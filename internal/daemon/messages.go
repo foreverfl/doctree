@@ -14,9 +14,13 @@ import (
 
 // --- OpRegisterWorktree ---
 
+// RegisterWorktreeArgs carries the inputs the daemon needs to insert a
+// worktree row. The repos row for RepoRoot is upserted server-side via
+// the Repo CRUD layer, so the client only forwards the path it already
+// knows from gitx.MainRepoRoot — the human-readable repo name shown in
+// CLI output is derived in Go from that path's basename.
 type RegisterWorktreeArgs struct {
 	RepoRoot       string `json:"repo_root"`
-	RepoName       string `json:"repo_name"`
 	BranchName     string `json:"branch_name"`
 	SafeBranchName string `json:"safe_branch_name"`
 	WorktreePath   string `json:"worktree_path"`

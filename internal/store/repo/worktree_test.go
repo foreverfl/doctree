@@ -23,7 +23,7 @@ func openTestRepo(t *testing.T) *Repo {
 func TestUpdateWorktree_Happy(t *testing.T) {
 	r := openTestRepo(t)
 	inserted, err := r.InsertWorktree(
-		"/repo", "repo", "feat/foo", "feat-foo", "/repo/.worktrees/feat-foo",
+		"/repo", "feat/foo", "feat-foo", "/repo/.worktrees/feat-foo",
 	)
 	if err != nil {
 		t.Fatalf("Insert: %v", err)
@@ -71,12 +71,12 @@ func TestUpdateWorktree_NoMatch(t *testing.T) {
 func TestUpdateWorktree_BranchNameConflict(t *testing.T) {
 	r := openTestRepo(t)
 	if _, err := r.InsertWorktree(
-		"/repo", "repo", "a", "a", "/repo/.worktrees/a",
+		"/repo", "a", "a", "/repo/.worktrees/a",
 	); err != nil {
 		t.Fatalf("Insert a: %v", err)
 	}
 	if _, err := r.InsertWorktree(
-		"/repo", "repo", "b", "b", "/repo/.worktrees/b",
+		"/repo", "b", "b", "/repo/.worktrees/b",
 	); err != nil {
 		t.Fatalf("Insert b: %v", err)
 	}
@@ -96,12 +96,12 @@ func TestUpdateWorktree_BranchNameConflict(t *testing.T) {
 func TestUpdateWorktree_PathConflict(t *testing.T) {
 	r := openTestRepo(t)
 	if _, err := r.InsertWorktree(
-		"/repo", "repo", "a", "a", "/repo/.worktrees/a",
+		"/repo", "a", "a", "/repo/.worktrees/a",
 	); err != nil {
 		t.Fatalf("Insert a: %v", err)
 	}
 	if _, err := r.InsertWorktree(
-		"/repo", "repo", "b", "b", "/repo/.worktrees/b",
+		"/repo", "b", "b", "/repo/.worktrees/b",
 	); err != nil {
 		t.Fatalf("Insert b: %v", err)
 	}
@@ -118,7 +118,7 @@ func TestUpdateWorktree_PathConflict(t *testing.T) {
 func TestDeleteWorktree_Happy(t *testing.T) {
 	r := openTestRepo(t)
 	if _, err := r.InsertWorktree(
-		"/repo", "repo", "feat/foo", "feat-foo", "/repo/.worktrees/feat-foo",
+		"/repo", "feat/foo", "feat-foo", "/repo/.worktrees/feat-foo",
 	); err != nil {
 		t.Fatalf("Insert: %v", err)
 	}
@@ -143,12 +143,12 @@ func TestDeleteWorktree_NoMatch(t *testing.T) {
 func TestDeleteWorktree_LeavesOtherRows(t *testing.T) {
 	r := openTestRepo(t)
 	if _, err := r.InsertWorktree(
-		"/repo", "repo", "a", "a", "/repo/.worktrees/a",
+		"/repo", "a", "a", "/repo/.worktrees/a",
 	); err != nil {
 		t.Fatalf("Insert a: %v", err)
 	}
 	if _, err := r.InsertWorktree(
-		"/repo", "repo", "b", "b", "/repo/.worktrees/b",
+		"/repo", "b", "b", "/repo/.worktrees/b",
 	); err != nil {
 		t.Fatalf("Insert b: %v", err)
 	}
@@ -165,12 +165,12 @@ func TestDeleteWorktree_LeavesOtherRows(t *testing.T) {
 func TestDeleteWorktree_RestrictsToRepo(t *testing.T) {
 	r := openTestRepo(t)
 	if _, err := r.InsertWorktree(
-		"/repoA", "repoA", "shared", "shared", "/repoA/.worktrees/shared",
+		"/repoA", "shared", "shared", "/repoA/.worktrees/shared",
 	); err != nil {
 		t.Fatalf("Insert A/shared: %v", err)
 	}
 	if _, err := r.InsertWorktree(
-		"/repoB", "repoB", "shared", "shared", "/repoB/.worktrees/shared",
+		"/repoB", "shared", "shared", "/repoB/.worktrees/shared",
 	); err != nil {
 		t.Fatalf("Insert B/shared: %v", err)
 	}

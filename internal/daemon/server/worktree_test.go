@@ -72,7 +72,7 @@ func TestHandleRenameWorktree_RenamesFolderBranchAndRow(t *testing.T) {
 
 	srv := newTestServer(t)
 	if _, err := srv.repo.InsertWorktree(
-		repoRoot, filepath.Base(repoRoot),
+		repoRoot,
 		"feat/foo", "feat-foo",
 		filepath.Join(repoRoot, ".worktrees/feat-foo"),
 	); err != nil {
@@ -128,7 +128,7 @@ func TestHandleRenameWorktree_RejectsTargetExists(t *testing.T) {
 
 	srv := newTestServer(t)
 	if _, err := srv.repo.InsertWorktree(
-		repoRoot, filepath.Base(repoRoot),
+		repoRoot,
 		"a", "a", filepath.Join(repoRoot, ".worktrees/a"),
 	); err != nil {
 		t.Fatalf("InsertWorktree a: %v", err)
@@ -154,7 +154,7 @@ func TestHandleRelease_DeletesRow(t *testing.T) {
 	repoRoot := setupBareLayout(t)
 	srv := newTestServer(t)
 	if _, err := srv.repo.InsertWorktree(
-		repoRoot, filepath.Base(repoRoot),
+		repoRoot,
 		"feat/foo", "feat-foo",
 		filepath.Join(repoRoot, ".worktrees/feat-foo"),
 	); err != nil {

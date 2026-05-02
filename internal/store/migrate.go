@@ -29,37 +29,75 @@ func renameSqliteDB(from, to string) error {
 	return nil
 }
 
-// migrator copies data from a database opened at schema v(N) to one opened
-// at schema v(N+1). The destination already has the v(N+1) schema applied,
-// so a migrator only needs to read from oldDB and write the equivalent rows
-// (renamed columns, split tables, derived defaults, etc.) into newDB.
+// migrator transforms data from a database opened at the source schema
+// version to a database opened at the current (target) schema version. It
+// reads from oldDB, derives whatever shape the current schema expects, and
+// writes into newDB. Each release ships a migrator for every prior version
+// the daemon may encounter in the wild — when schema.sql gains or drops a
+// column, we update the migrator bodies in lock-step rather than chaining
+// step-by-step migrators across versions, so newDB always speaks current.
 type migrator func(oldDB, newDB *sql.DB) error
 
-// migrations is the registry of step migrators keyed by source schema
-// version. v0 → v1 is handled in Open as a stamp-only path, so it has no
-// entry. When schema.sql changes, bump currentSchemaVersion and register
-// migrations[currentSchemaVersion-1] = ... here.
+// migrations: registry of migrators from old schema versions to current.
+//
+// Version semantics:
+// 1. v0:
+//    - Fresh database (no schema applied yet)
+//    - OR pre-versioning v1 database (schema exists but user_version not set)
+//    - Handled in Open() with stamp-only (no migration needed)
+//
+// 2. v1:
+//    - worktrees has denormalised columns:
+//      (repo_root, repo_name)
+//
+// 3. v2:
+//    - Same worktrees shape as v1
+//    - Still uses (repo_root, repo_name)
+//
+// 4. v3 (current):
+//    - worktrees replaces (repo_root, repo_name) with repo_id (FK)
+//    - repos table introduced
+//
+// Migration strategy:
+// - v1 and v2 both use migrateLegacyWorktreesToCurrent()
+//   because their data shape is identical
+// - Both need backfill into repos, then rewrite worktrees with repo_id
+//
+// Note:
+// - We do NOT chain step-by-step migrations
+// - Each migrator converts directly from old version → current schema
 var migrations = map[int]migrator{
-	1: migrateV1ToV2,
+	1: migrateLegacyWorktreesToCurrent,
+	2: migrateLegacyWorktreesToCurrent,
 }
 
-// migrateV1ToV2 carries the v1 worktrees rows forward unchanged. v2 adds
-// the new `repos` table and re-shapes `ports`: same per-worktree intent as
-// v1 (still keyed by worktree_id) but with extra columns (id, name,
-// container_port, protocol, timestamps) that v1 has no source for. Rather
-// than fabricate defaults for required columns, v1 ports rows are dropped
-// — that table was never populated by any CRUD or daemon path, so the drop
-// is a no-op for real installs. New tables start empty and the daemon or
-// future commands populate them.
-func migrateV1ToV2(oldDB, newDB *sql.DB) error {
+// migrateLegacyWorktreesToCurrent backfills the v3 repos table from the
+// denormalised (repo_root, repo_name) pair on legacy worktrees rows, then
+// inserts each worktree under its derived repo_id. Both v1 and v2 store
+// worktrees with the same columns so the same body works for either —
+// migrateLegacyWorktreesToCurrent is registered under migrations[1] and
+// migrations[2]. Repo metadata that legacy schemas never tracked
+// (default_branch, language, framework, compose_monorepo) defaults to ""
+// or 0 here; the daemon or a follow-up `gitt repos set` flow can fill
+// real values in once detected. Legacy ports rows have no equivalent in
+// the v3 ports shape and are dropped; that table was never populated in
+// either v1 or v2.
+func migrateLegacyWorktreesToCurrent(oldDB, newDB *sql.DB) error {
 	worktreeRows, err := oldDB.Query(`
 		SELECT id, repo_root, repo_name, branch_name, safe_branch_name,
 		       worktree_path, status, created_at, updated_at
-		  FROM worktrees`)
+		  FROM worktrees
+		ORDER BY id`)
 	if err != nil {
 		return fmt.Errorf("read worktrees: %w", err)
 	}
 	defer worktreeRows.Close()
+
+	// One repos row per unique repo_root encountered; reuse the inserted
+	// id for every worktree under that root. Insertion order tracks the
+	// first worktree we see per repo, so repos.id sequencing is stable
+	// and reproducible from the source data.
+	repoIDs := map[string]int64{}
 	for worktreeRows.Next() {
 		var (
 			id                                                           int64
@@ -69,10 +107,32 @@ func migrateV1ToV2(oldDB, newDB *sql.DB) error {
 		if err := worktreeRows.Scan(&id, &repoRoot, &repoName, &branchName, &safeBranchName, &worktreePath, &status, &createdAt, &updatedAt); err != nil {
 			return fmt.Errorf("scan worktree: %w", err)
 		}
+
+		repoID, ok := repoIDs[repoRoot]
+		if !ok {
+			res, err := newDB.Exec(
+				`INSERT INTO repos (root_path, bare_path, worktrees_path, default_branch, language, framework, compose_monorepo, created_at, updated_at)
+				 VALUES (?, ?, ?, '', '', '', 0, ?, ?)`,
+				repoRoot,
+				repoRoot+"/.bare",
+				repoRoot+"/.worktrees",
+				createdAt, updatedAt,
+			)
+			if err != nil {
+				return fmt.Errorf("insert repo for %s: %w", repoRoot, err)
+			}
+			repoID, err = res.LastInsertId()
+			if err != nil {
+				return fmt.Errorf("repo id for %s: %w", repoRoot, err)
+			}
+			_ = repoName // legacy column dropped in v3; presence covered by the SELECT only
+			repoIDs[repoRoot] = repoID
+		}
+
 		if _, err := newDB.Exec(
-			`INSERT INTO worktrees (id, repo_root, repo_name, branch_name, safe_branch_name, worktree_path, status, created_at, updated_at)
-			 VALUES (?,?,?,?,?,?,?,?,?)`,
-			id, repoRoot, repoName, branchName, safeBranchName, worktreePath, status, createdAt, updatedAt,
+			`INSERT INTO worktrees (id, repo_id, branch_name, safe_branch_name, worktree_path, status, created_at, updated_at)
+			 VALUES (?,?,?,?,?,?,?,?)`,
+			id, repoID, branchName, safeBranchName, worktreePath, status, createdAt, updatedAt,
 		); err != nil {
 			return fmt.Errorf("insert worktree id=%d: %w", id, err)
 		}
@@ -90,8 +150,10 @@ func migrateV1ToV2(oldDB, newDB *sql.DB) error {
 //     file rather than a half-written primary.
 //  2. Create <dbpath>.new and apply the v(toVersion) schema + user_version
 //     stamp.
-//  3. Open <dbpath>.old read/write and run each registered migrator from
-//     fromVersion up to toVersion-1, copying rows into <dbpath>.new.
+//  3. Open <dbpath>.old read/write and run migrations[fromVersion], which
+//     transforms the source data straight into the current (toVersion)
+//     shape inside <dbpath>.new — see the migrator type comment for why
+//     it is a single jump rather than a v(N)→v(N+1) chain.
 //  4. On success, rename <dbpath>.new → <dbpath> (again with sidecars), then
 //     remove <dbpath>.old plus its WAL/SHM sidecars.
 //  5. On any failure, remove <dbpath>.new and restore <dbpath>.old → <dbpath>
@@ -147,18 +209,16 @@ func MigrateOnDisk(dbpath string, fromVersion, toVersion int) error {
 		return abort(fmt.Errorf("open backup db: %w", err))
 	}
 
-	for v := fromVersion; v < toVersion; v++ {
-		step, ok := migrations[v]
-		if !ok {
-			_ = oldDB.Close()
-			_ = newDB.Close()
-			return abort(fmt.Errorf("no migrator registered for v%d → v%d", v, v+1))
-		}
-		if err := step(oldDB, newDB); err != nil {
-			_ = oldDB.Close()
-			_ = newDB.Close()
-			return abort(fmt.Errorf("migrate v%d → v%d: %w", v, v+1, err))
-		}
+	step, ok := migrations[fromVersion]
+	if !ok {
+		_ = oldDB.Close()
+		_ = newDB.Close()
+		return abort(fmt.Errorf("no migrator registered for v%d → v%d", fromVersion, toVersion))
+	}
+	if err := step(oldDB, newDB); err != nil {
+		_ = oldDB.Close()
+		_ = newDB.Close()
+		return abort(fmt.Errorf("migrate v%d → v%d: %w", fromVersion, toVersion, err))
 	}
 
 	if err := oldDB.Close(); err != nil {

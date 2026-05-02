@@ -3,7 +3,6 @@ package client
 import (
 	"errors"
 	"fmt"
-	"path/filepath"
 
 	"github.com/foreverfl/gitt/internal/daemon"
 	"github.com/foreverfl/gitt/internal/gitx"
@@ -20,7 +19,6 @@ func RegisterWorktree(mainRoot, branch, target string) error {
 	}
 	args, err := daemon.EncodeArgs(daemon.RegisterWorktreeArgs{
 		RepoRoot:       mainRoot,
-		RepoName:       filepath.Base(mainRoot),
 		BranchName:     branch,
 		SafeBranchName: gitx.SafeBranch(branch),
 		WorktreePath:   target,

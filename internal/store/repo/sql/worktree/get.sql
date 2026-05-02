@@ -1,13 +1,14 @@
 SELECT
-  id,
-  repo_root,
-  repo_name,
-  branch_name,
-  safe_branch_name,
-  worktree_path,
-  status,
-  created_at,
-  updated_at
+  worktrees.id,
+  worktrees.repo_id,
+  repos.root_path AS repo_root,
+  worktrees.branch_name,
+  worktrees.safe_branch_name,
+  worktrees.worktree_path,
+  worktrees.status,
+  worktrees.created_at,
+  worktrees.updated_at
 FROM worktrees
-WHERE repo_root  = ?
-  AND branch_name = ?;
+JOIN repos ON repos.id = worktrees.repo_id
+WHERE repos.root_path = ?
+  AND worktrees.branch_name = ?;

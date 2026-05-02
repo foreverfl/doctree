@@ -17,12 +17,12 @@ func (s *server) handleRegisterWorktree(req daemon.Request) daemon.Response {
 	if err := daemon.DecodeArgs(req, &args); err != nil {
 		return daemon.Response{OK: false, Error: err.Error()}
 	}
-	if args.RepoRoot == "" || args.RepoName == "" || args.BranchName == "" ||
+	if args.RepoRoot == "" || args.BranchName == "" ||
 		args.SafeBranchName == "" || args.WorktreePath == "" {
 		return daemon.Response{OK: false, Error: "register_worktree: missing required arg"}
 	}
 
-	row, err := s.repo.InsertWorktree(args.RepoRoot, args.RepoName, args.BranchName, args.SafeBranchName, args.WorktreePath)
+	row, err := s.repo.InsertWorktree(args.RepoRoot, args.BranchName, args.SafeBranchName, args.WorktreePath)
 	if err != nil {
 		return daemon.Response{OK: false, Error: err.Error()}
 	}

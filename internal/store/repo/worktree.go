@@ -3,6 +3,7 @@ package repo
 import (
 	_ "embed"
 	"fmt"
+	"path/filepath"
 )
 
 //go:embed sql/worktree/insert.sql
@@ -20,11 +21,17 @@ var worktreeGetSQL string
 //go:embed sql/worktree/delete.sql
 var worktreeDeleteSQL string
 
-// Worktree is a row of the worktrees table. created_at / updated_at are kept
-// as the raw SQLite TEXT (ISO-8601 UTC) so callers can format or pass them
-// through without imposing a time.Time conversion at the storage layer.
+//go:embed sql/repo/upsert.sql
+var repoUpsertSQL string
+
+// Worktree is one row of the worktrees table joined to repos. RepoID is
+// the FK; RepoRoot comes from the joined repos.root_path; RepoName is
+// derived in Go from RepoRoot's basename and not stored anywhere — keeping
+// it on the struct lets list-style consumers display "<repo> / <branch>"
+// without re-deriving it themselves.
 type Worktree struct {
 	ID             int64  `json:"id"`
+	RepoID         int64  `json:"repo_id"`
 	RepoRoot       string `json:"repo_root"`
 	RepoName       string `json:"repo_name"`
 	BranchName     string `json:"branch_name"`
@@ -35,25 +42,55 @@ type Worktree struct {
 	UpdatedAt      string `json:"updated_at"`
 }
 
-// InsertWorktree persists a new worktree row and returns the populated record
-// (id and timestamps filled in by SQLite). Returns an error when (repo_root,
-// branch_name) or worktree_path is already taken.
-func (r *Repo) InsertWorktree(repoRoot, repoName, branchName, safeBranchName, worktreePath string) (Worktree, error) {
+// InsertWorktree persists a new worktree row, upserting the parent repos
+// row first so callers that pass only a repo_root path don't have to
+// register the repository up-front. Returns the populated record (id,
+// repo_id, status, timestamps filled in by SQLite). Returns an error
+// when (repo_id, branch_name) or worktree_path is already taken.
+func (r *Repo) InsertWorktree(repoRoot, branchName, safeBranchName, worktreePath string) (Worktree, error) {
 	worktree := Worktree{
 		RepoRoot:       repoRoot,
-		RepoName:       repoName,
+		RepoName:       filepath.Base(repoRoot),
 		BranchName:     branchName,
 		SafeBranchName: safeBranchName,
 		WorktreePath:   worktreePath,
 	}
+
+	repoID, err := r.upsertRepo(repoRoot)
+	if err != nil {
+		return Worktree{}, err
+	}
+	worktree.RepoID = repoID
+
 	row := r.db.QueryRow(
 		worktreeInsertSQL,
-		repoRoot, repoName, branchName, safeBranchName, worktreePath,
+		repoID, branchName, safeBranchName, worktreePath,
 	)
 	if err := row.Scan(&worktree.ID, &worktree.Status, &worktree.CreatedAt, &worktree.UpdatedAt); err != nil {
 		return Worktree{}, fmt.Errorf("insert worktree: %w", err)
 	}
 	return worktree, nil
+}
+
+// upsertRepo ensures a repos row exists for repoRoot and returns its id,
+// using gitt's <root>/.bare and <root>/.worktrees layout convention to
+// fill the path columns. The metadata fields (default_branch, language,
+// framework, compose_monorepo) start blank and are filled in later by
+// repo configuration commands; on a repeat call the row's updated_at is
+// bumped to mark "last referenced" without disturbing the configured
+// metadata.
+func (r *Repo) upsertRepo(repoRoot string) (int64, error) {
+	row := r.db.QueryRow(
+		repoUpsertSQL,
+		repoRoot,
+		filepath.Join(repoRoot, ".bare"),
+		filepath.Join(repoRoot, ".worktrees"),
+	)
+	var id int64
+	if err := row.Scan(&id); err != nil {
+		return 0, fmt.Errorf("upsert repo (%s): %w", repoRoot, err)
+	}
+	return id, nil
 }
 
 // GetWorktree fetches a single worktree row by (repoRoot, branchName).
@@ -63,8 +100,8 @@ func (r *Repo) GetWorktree(repoRoot, branchName string) (Worktree, error) {
 	var worktree Worktree
 	if err := row.Scan(
 		&worktree.ID,
+		&worktree.RepoID,
 		&worktree.RepoRoot,
-		&worktree.RepoName,
 		&worktree.BranchName,
 		&worktree.SafeBranchName,
 		&worktree.WorktreePath,
@@ -74,13 +111,14 @@ func (r *Repo) GetWorktree(repoRoot, branchName string) (Worktree, error) {
 	); err != nil {
 		return Worktree{}, fmt.Errorf("get worktree (%s, %s): %w", repoRoot, branchName, err)
 	}
+	worktree.RepoName = filepath.Base(worktree.RepoRoot)
 	return worktree, nil
 }
 
 // UpdateWorktree renames a worktree row identified by (repoRoot, oldBranch),
 // rewriting branch_name, safe_branch_name, and worktree_path to the new
 // values. Returns the updated record. The unique constraints on
-// (repo_root, branch_name) and worktree_path are enforced by the store; a
+// (repo_id, branch_name) and worktree_path are enforced by the store; a
 // conflict with another row surfaces as the error. When no row matches,
 // returns sql.ErrNoRows wrapped with context.
 func (r *Repo) UpdateWorktree(repoRoot, oldBranch, newBranch, newSafeBranch, newWorktreePath string) (Worktree, error) {
@@ -92,8 +130,8 @@ func (r *Repo) UpdateWorktree(repoRoot, oldBranch, newBranch, newSafeBranch, new
 	var worktree Worktree
 	if err := row.Scan(
 		&worktree.ID,
+		&worktree.RepoID,
 		&worktree.RepoRoot,
-		&worktree.RepoName,
 		&worktree.BranchName,
 		&worktree.SafeBranchName,
 		&worktree.WorktreePath,
@@ -103,6 +141,7 @@ func (r *Repo) UpdateWorktree(repoRoot, oldBranch, newBranch, newSafeBranch, new
 	); err != nil {
 		return Worktree{}, fmt.Errorf("update worktree (%s, %s): %w", repoRoot, oldBranch, err)
 	}
+	worktree.RepoName = filepath.Base(worktree.RepoRoot)
 	return worktree, nil
 }
 
@@ -131,8 +170,8 @@ func (r *Repo) ListWorktrees() ([]Worktree, error) {
 		var worktree Worktree
 		if err := rows.Scan(
 			&worktree.ID,
+			&worktree.RepoID,
 			&worktree.RepoRoot,
-			&worktree.RepoName,
 			&worktree.BranchName,
 			&worktree.SafeBranchName,
 			&worktree.WorktreePath,
@@ -142,6 +181,7 @@ func (r *Repo) ListWorktrees() ([]Worktree, error) {
 		); err != nil {
 			return nil, fmt.Errorf("scan worktree: %w", err)
 		}
+		worktree.RepoName = filepath.Base(worktree.RepoRoot)
 		worktrees = append(worktrees, worktree)
 	}
 	if err := rows.Err(); err != nil {
